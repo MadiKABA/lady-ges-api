@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: lady_ges
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:root@db:5432/db_lady_ges
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/main.js"]
+    networks:
+      - ladyges_network
+
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_lady_ges
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: db_lady_ges
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ladyges_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+networks:
+  ladyges_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
