@@ -17,6 +17,7 @@ model Permission {
   id               Int                @id @default(autoincrement())
   codePermission   String             @unique
   namePermission   String             @unique
+  isSystem         Boolean            @default(false)
   group            String
   RoleToPermission RoleToPermission[]
   createdAt        DateTime           @default(now())
@@ -26,11 +27,13 @@ model Permission {
 model Role {
   id               Int                @id @default(autoincrement())
   codeRole         String             @unique
-  nameRole         String             @unique
+  nameRole         String
+  isSysteme        Boolean            @default(false)
   RoleToPermission RoleToPermission[]
   Admin            Admin[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
+  Customer         Customer[]
 }
 
 model RoleToPermission {
@@ -59,4 +62,53 @@ model Admin {
   role         Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Enterprises {
+  id        Int        @id @default(autoincrement())
+  name      String
+  matricule String     @unique
+  email     String     @unique
+  phone     String     @unique
+  status    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Shops     Shops[]
+  Customer  Customer[]
+}
+
+model Shops {
+  id           Int         @id @default(autoincrement())
+  name         String
+  matricule    String      @unique
+  email        String      @unique
+  phone        String      @unique
+  status       String
+  logo         String?
+  enterpriseId Int
+  entreprise   Enterprises @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  Customer     Customer[]
+}
+
+model Customer {
+  id           Int          @id @default(autoincrement())
+  name         String
+  matricule    String       @unique
+  email        String       @unique
+  phone        String       @unique
+  password     String
+  address      String?
+  roleId       Int
+  token        String?
+  refreshToken String?
+  status       String
+  shopId       Int
+  enterpriseId Int?
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  shop         Shops        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  entreprise   Enterprises? @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
